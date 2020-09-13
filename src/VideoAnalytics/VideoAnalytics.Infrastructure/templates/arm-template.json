@@ -1,0 +1,131 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "name": {
+            "defaultValue": "[resourceGroup().name]",
+            "type": "string"
+        },
+        "location": {
+            "defaultValue": "[resourceGroup().location]",
+            "type": "string"
+        },
+        "customVisionAuthoringServiceName": {
+            "defaultValue": "[concat(parameters('name'), '-cv-auth')]",
+            "type": "string"
+        },
+        "customVisionPredictionServiceName": {
+            "defaultValue": "[concat(parameters('name'), '-cv-pred')]",
+            "type": "string"
+        },
+        "appServicePlanName": {
+            "defaultValue": "[concat(parameters('name'), '-plan')]",
+            "type": "string"
+        },
+        "webAppName": {
+            "defaultValue": "[concat(parameters('name'), '-web')]",
+            "type": "string"
+        },
+        "customVisionAuthoringServiceSku": {
+            "type": "string",
+            "defaultValue": "F0"
+        },
+        "customVisionPredictionServiceSku": {
+            "type": "string",
+            "defaultValue": "S0"
+        },
+        "appServicePlanSku": {
+            "type": "object",
+            "defaultValue": {
+              "tier": "Standard",
+              "name": "S1"
+            }
+        }
+    },
+    "variables": {
+        "webAppName": "[replace(parameters('webAppName'), '_', '')]"
+    },
+    "resources": [
+        {
+            "comments": "Custom Vision authoring service.",
+            "type": "Microsoft.CognitiveServices/accounts",
+            "apiVersion": "2017-04-18",
+            "kind": "CustomVision.Training",
+            "name": "[parameters('customVisionAuthoringServiceName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "customSubDomainName": "[parameters('customVisionAuthoringServiceName')]",
+                "privateEndpointConnections": [],
+                "publicNetworkAccess": "Enabled"
+            },
+            "sku": {
+                "name": "[parameters('customVisionAuthoringServiceSku')]"
+            } 
+        },
+        {
+            "comments": "Custom Vision prediction service.",
+            "type": "Microsoft.CognitiveServices/accounts",
+            "apiVersion": "2017-04-18",
+            "kind": "CustomVision.Prediction",
+            "name": "[parameters('customVisionPredictionServiceName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "customSubDomainName": "[parameters('customVisionPredictionServiceName')]",
+                "privateEndpointConnections": [],
+                "publicNetworkAccess": "Enabled"
+            },
+            "sku": {
+                "name": "[parameters('customVisionPredictionServiceSku')]"
+            }
+        },
+        {
+            "comments": "App service plan.",
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2018-02-01",
+            "kind": "app",
+            "name": "[parameters('appServicePlanName')]",
+            "location": "[parameters('location')]",
+            "properties": {},
+            "sku": "[parameters('appServicePlanSku')]"
+        },
+        {
+            "comments": "Web app service.",
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2018-02-01",
+            "name": "[variables('webAppName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]"
+            ]
+        }
+    ],
+    "outputs": {
+        "resourceGroupName": {
+          "type": "string",
+          "value": "[parameters('name')]"
+        },
+        "customVisionAuthoringService": {
+          "type": "object",
+          "value": {
+            "accountName": "[parameters('customVisionAuthoringServiceName')]",
+            "region": "[parameters('location')]",
+            "key": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', parameters('customVisionAuthoringServiceName')),'2017-04-18').key1]"
+          }
+        },
+        "customVisionPredictionService": {
+          "type": "object",
+          "value": {
+            "accountName": "[parameters('customVisionPredictionServiceName')]",
+            "region": "[parameters('location')]",
+            "key": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', parameters('customVisionPredictionServiceName')),'2017-04-18').key1]"
+          }
+        },
+        "webAppName": {
+          "type": "string",
+          "value": "[variables('webAppName')]"
+        }
+    }
+}

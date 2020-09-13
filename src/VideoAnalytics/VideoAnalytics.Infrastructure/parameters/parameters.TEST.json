@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "customVisionAuthoringServiceSku": {
+      "value": "S0"
+    },
+    "customVisionPredictionServiceSku": {
+      "value": "S0"
+    },
+    "appServicePlanSku": {
+      "value": {
+        "capacity": 0,
+        "family": "B",
+        "name": "B1",
+        "size": "B1",
+        "tier": "Basic"
+      }
+    }
+  }
+}
