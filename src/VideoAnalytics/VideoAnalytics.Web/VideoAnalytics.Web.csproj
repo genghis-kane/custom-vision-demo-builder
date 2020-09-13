@@ -15,6 +15,7 @@
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.1.4" />
     <PackageReference Include="Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction" Version="2.0.0" />
     <PackageReference Include="Microsoft.Azure.CognitiveServices.Vision.CustomVision.Training" Version="2.0.0" />
+    <PackageReference Include="Xabe.FFmpeg" Version="4.2.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,6 +23,29 @@
     <Content Remove="$(SpaRoot)**" />
     <None Remove="$(SpaRoot)**" />
     <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="ClientApp\frames\info.txt" />
+    <None Remove="ClientApp\videos\training-video.mp4" />
+    <None Remove="FFMPEG\ffmpeg.exe" />
+    <None Remove="FFMPEG\ffplay.exe" />
+    <None Remove="FFMPEG\ffprobe.exe" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ContentWithTargetPath Include="FFMPEG\ffmpeg.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>ffmpeg.exe</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="FFMPEG\ffplay.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>ffplay.exe</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="FFMPEG\ffprobe.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>ffprobe.exe</TargetPath>
+    </ContentWithTargetPath>
   </ItemGroup>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
@@ -49,5 +73,16 @@
       </ResolvedFileToPublish>
     </ItemGroup>
   </Target>
+
+  <ItemGroup>
+    <Content Include="ClientApp\frames\info.txt">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="ClientApp\videos\training-video.mp4">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
 
 </Project>
