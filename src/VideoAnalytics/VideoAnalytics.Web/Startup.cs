@@ -1,26 +1,37 @@
+using Autofac;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using VideoAnalytics.Web.Configuration;
+using VideoAnalytics.Web.Configuration.Interfaces;
+using VideoAnalytics.Web.Services;
+using VideoAnalytics.Web.Services.Interfaces;
 
 namespace VideoAnalytics.Web
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IWebHostEnvironment env)
         {
-            Configuration = configuration;
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddEnvironmentVariables();
+
+            this.Configuration = builder.Build();
         }
 
-        public IConfiguration Configuration { get; }
+        public IConfigurationRoot Configuration { get; }
+
+        public ILifetimeScope AutofacContainer { get; private set; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
             services.AddControllersWithViews();
 
             // In production, the React files will be served from this directory
@@ -28,6 +39,44 @@ namespace VideoAnalytics.Web
             {
                 configuration.RootPath = "ClientApp/build";
             });
+        }
+
+        public void ConfigureContainer(ContainerBuilder builder)
+        {
+            builder.Register(ctx =>
+            {
+                var projectSettings = new CustomVisionProjectSettings
+                {
+                    ProjectName = Configuration.GetValue<string>("CustomVision:Project:Name"),
+                    ProjectType = Configuration.GetValue<string>("CustomVision:Project:Type")
+                };
+
+                var serviceSettings = new CustomVisionAuthoringSettings
+                {
+                    AccountRegion = Configuration.GetValue<string>("CustomVision:AuthoringService:AccountRegion"),
+                    AccountName = Configuration.GetValue<string>("CustomVision:AuthoringService:AccountName"),
+                    AccountKey = Configuration.GetValue<string>("CustomVision:AuthoringService:AccountKey")
+                };
+
+                return new CustomVisionAuthoringService(projectSettings, serviceSettings);
+
+            }).As<ICustomVisionAuthoringService>();
+
+            builder.Register(ctx =>
+            {
+                var serviceSettings = new CustomVisionPredictionSettings
+                {
+                    AccountRegion = Configuration.GetValue<string>("CustomVision:PredictionService:AccountRegion"),
+                    AccountName = Configuration.GetValue<string>("CustomVision:PredictionService:AccountName"),
+                    AccountKey = Configuration.GetValue<string>("CustomVision:PredictionService:AccountKey")
+                };
+
+                return new CustomVisionPredictionService(serviceSettings);
+
+            }).As<ICustomVisionPredictionService>();
+
+            // TODO: move to module as below
+            // builder.RegisterModule(new MyApplicationModule());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
