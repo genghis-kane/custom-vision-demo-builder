@@ -75,6 +75,8 @@ namespace VideoAnalytics.Web
 
             }).As<ICustomVisionPredictionService>();
 
+            builder.RegisterType<VideoFrameExtractionService>().As<IVideoFrameExtractionService>();
+
             // TODO: move to module as below
             // builder.RegisterModule(new MyApplicationModule());
         }
