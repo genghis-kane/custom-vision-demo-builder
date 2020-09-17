@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -12,11 +10,6 @@ namespace VideoAnalytics.Web.Controllers
     [Route("[controller]")]
     public class CustomVisionAuthoringController : ControllerBase
     {
-        private static readonly string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
-
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly ICustomVisionAuthoringService _authoringService;
         private readonly IVideoFrameExtractionService _videoFrameExtractionService;
@@ -32,26 +25,34 @@ namespace VideoAnalytics.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<WeatherForecast>> Get()
+        public async Task<IEnumerable<string>> Get()
         {
+//            var img1 = "frames/0d6efcbb-7e17-4e3f-ab47-5cd461964df9.png";
+//            var img2 = "frames/174a6bed-929f-4959-84bd-76d9d28626ab.png";
+//            var img3 = "frames/31374798-fc75-431a-ac64-2a216479394c.png";
+//
+//            return new List<string> { img1, img2, img3 };
+
+
             var response = await _authoringService.GetOrCreateProject();
 
             // Ideally this would move to blob storage, but I'm not sure the ffmpeg library will handle it
             string videoFile = $"{_webHostEnvironment.ContentRootPath}\\ClientApp\\videos\\training-video.mp4";
-            string saveImagesTo = $"{_webHostEnvironment.ContentRootPath}\\ClientApp\\frames";
+            string saveImagesTo = $"{_webHostEnvironment.ContentRootPath}\\ClientApp\\build\\frames";
             int frameStep = 15;
             int maxFrames = 50;
 
-            await _videoFrameExtractionService.SaveImageFrames(videoFile, saveImagesTo, frameStep, maxFrames);
+            var result = await _videoFrameExtractionService.SaveImageFrames(videoFile, saveImagesTo, frameStep, maxFrames);
 
-            var rng = new Random();
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            var paths = new List<string>();
+            foreach (var imageFilePath in result.ImageFilePaths)
             {
-                Date = DateTime.Now.AddDays(index),
-                TemperatureC = rng.Next(-20, 55),
-                Summary = Summaries[rng.Next(Summaries.Length)]
-            })
-            .ToArray();
+                var basePath = $"{_webHostEnvironment.ContentRootPath}\\ClientApp\\build";
+                var path = imageFilePath.Replace(basePath, string.Empty);
+                paths.Add(path);
+            }
+
+            return paths.ToArray();
         }
     }
 }

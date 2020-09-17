@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Training;
 using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Training.Models;
-using VideoAnalytics.Web.Configuration;
 using VideoAnalytics.Web.Configuration.Interfaces;
 using VideoAnalytics.Web.Models;
 using VideoAnalytics.Web.Services.Interfaces;
