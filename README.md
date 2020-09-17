@@ -1,4 +1,4 @@
-# video-analytics
+# custom-vision-demo-builder
 Custom Vision demo builder project.
 
 ## .Infrastructure
