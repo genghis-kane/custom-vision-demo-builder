@@ -6,7 +6,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using VideoAnalytics.Web.Configuration;
-using VideoAnalytics.Web.Configuration.Interfaces;
 using VideoAnalytics.Web.Services;
 using VideoAnalytics.Web.Services.Interfaces;
 
