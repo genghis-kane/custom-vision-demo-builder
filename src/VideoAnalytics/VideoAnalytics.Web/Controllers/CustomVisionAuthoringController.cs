@@ -33,7 +33,7 @@ namespace VideoAnalytics.Web.Controllers
             //
             // return new List<string> { img1, img2, img3 };
 
-
+            
             var response = await _authoringService.GetOrCreateProject();
             
             // Ideally this would move to blob storage, but I'm not sure the ffmpeg library will handle it
@@ -60,6 +60,15 @@ namespace VideoAnalytics.Web.Controllers
         public async Task UploadVideoFrames([FromBody] IList<string> videoFrames)
         {
             //TODO
+            var paths = new List<string>();
+            foreach (var imageFilePath in videoFrames)
+            {
+                var basePath = $"{_webHostEnvironment.ContentRootPath}\\ClientApp\\build\\"; //this will be different between local and published, what a pain
+                var path = $"{basePath}{imageFilePath}";
+                paths.Add(path);
+            }
+
+            await _authoringService.PublishImages(paths);
         }
     }
 }
