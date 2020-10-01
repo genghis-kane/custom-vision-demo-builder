@@ -33,10 +33,16 @@ export class VideoFrameExtractor extends Component {
       : this.renderImageFrames(this.state.frames);
 
     return (
-      <div>
+      <div class="row">
         <h1 id="tabelLabel" >Train</h1>
-        <p>This component demonstrates fetching data from the server.</p>
-        {contents}
+        <div class="container">
+          <div class="row">
+            {contents}
+          </div>
+          <div class="row">
+            <button type="button" class="btn btn-primary">Upload</button>
+          </div>
+        </div>
       </div>
     );
   }
