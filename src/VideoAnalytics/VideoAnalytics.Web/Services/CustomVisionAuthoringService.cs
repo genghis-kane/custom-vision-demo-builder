@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Training;
@@ -45,10 +47,39 @@ namespace VideoAnalytics.Web.Services
             return new CustomVisionOperationResponse { Success = false };
         }
 
+        public async Task PublishImages(IList<string> imageFilePaths)
+        {
+            var imageFileEntries = new List<ImageFileCreateEntry>();
+            foreach (var imageFilePath in imageFilePaths)
+            {
+                var fileName = Path.GetFileNameWithoutExtension(imageFilePath);
+                var entry = new ImageFileCreateEntry(fileName, await File.ReadAllBytesAsync(imageFilePath));
+                imageFileEntries.Add(entry);
+            }
+
+            var projectId = await GetProjectId(_projectSettings.ProjectName);
+            await _trainingApi.CreateImagesFromFilesAsync(projectId, new ImageFileCreateBatch(imageFileEntries));
+
+            // TODO - validations
+            //64 item limit on publish batches
+            //6MB limit on file sizes
+        }
+
         private async Task<bool> ProjectExists(string projectName)
         {
             IList<Project> projects = await _trainingApi.GetProjectsAsync();
             return projects.Any(p => p.Name == projectName);
+        }
+
+        private async Task<Guid> GetProjectId(string projectName)
+        {
+            if (await ProjectExists(projectName))
+            {
+                IList<Project> projects = await _trainingApi.GetProjectsAsync();
+                return projects.First(p => p.Name == projectName).Id;
+            }
+            
+            return Guid.Empty;
         }
     }
 }

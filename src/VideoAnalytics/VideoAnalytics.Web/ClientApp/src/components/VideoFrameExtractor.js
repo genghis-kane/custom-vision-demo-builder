@@ -13,6 +13,7 @@ export class VideoFrameExtractor extends Component {
     this.renderImageFrames = this.renderImageFrames.bind(this);
     this.populateImageFrames = this.populateImageFrames.bind(this);
     this.onSelectImage = this.onSelectImage.bind(this);
+    this.uploadSelectedImages = this.uploadSelectedImages.bind(this);
   }
 
   componentDidMount() {
@@ -33,10 +34,16 @@ export class VideoFrameExtractor extends Component {
       : this.renderImageFrames(this.state.frames);
 
     return (
-      <div>
-        <h1 id="tabelLabel" >Train</h1>
-        <p>This component demonstrates fetching data from the server.</p>
-        {contents}
+      <div className='row'>
+        <h1 id='tabelLabel' >Train</h1>
+        <div className='container'>
+          <div className='row'>
+            {contents}
+          </div>
+          <div className='row'>
+            <button type='button' className='btn btn-primary' onClick={this.uploadSelectedImages}>Upload</button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -58,6 +65,20 @@ export class VideoFrameExtractor extends Component {
     this.setState({ frames: imageFrames, loading: false });
   }
 
+  async uploadSelectedImages() {
+    var frames = this.state.frames;
+    var requestBody = frames.filter(i => i.isSelected).map(i => i.src);
+    
+    await fetch('customvisionauthoring/uploadvideoframes', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    });
+  }
+
   /* Gallery methods */
   onSelectImage (index, image) {
     var images = this.state.frames.slice();
@@ -68,7 +89,7 @@ export class VideoFrameExtractor extends Component {
         img.isSelected = true;
 
     this.setState({
-        images: images
+        frames: images
     });
 
     if(this.allImagesSelected(images)){
