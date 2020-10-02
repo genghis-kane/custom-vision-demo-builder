@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using VideoAnalytics.Web.Services.Interfaces;
@@ -16,13 +20,16 @@ namespace VideoAnalytics.Web.Controllers
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
 
+        private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly ICustomVisionPredictionService _predictionService;
         private readonly ILogger<CustomVisionPredictionController> _logger;
 
         public CustomVisionPredictionController(
+            IWebHostEnvironment webHostEnvironment,
             ICustomVisionPredictionService predictionService,
             ILogger<CustomVisionPredictionController> logger)
         {
+            _webHostEnvironment = webHostEnvironment;
             _predictionService = predictionService;
             _logger = logger;
         }
@@ -38,6 +45,26 @@ namespace VideoAnalytics.Web.Controllers
                 Summary = Summaries[rng.Next(Summaries.Length)]
             })
             .ToArray();
+        }
+
+        [HttpPost]
+        [Route("uploadvideo")]
+        [DisableRequestSizeLimit]
+        public async Task<IActionResult> UploadVideoForPrediction([FromForm] IFormFile file)
+        {
+            if (file?.Length > 0)
+            {
+                string saveImagesTo = $"{_webHostEnvironment.ContentRootPath}\\ClientApp\\build\\videos"; //cloud
+                // string saveImagesTo = $"{_webHostEnvironment.ContentRootPath}\\ClientApp\\videos"; //local
+
+                var fileName = $"{Guid.NewGuid()}-{file.FileName}";
+                var filePath = Path.Combine(saveImagesTo, fileName);
+
+                await using var stream = System.IO.File.Create(filePath);
+                await file.CopyToAsync(stream);
+            }
+
+            return Ok();
         }
     }
 }
