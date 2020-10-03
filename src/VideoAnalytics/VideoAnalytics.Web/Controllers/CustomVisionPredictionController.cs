@@ -50,8 +50,9 @@ namespace VideoAnalytics.Web.Controllers
         [HttpPost]
         [Route("uploadvideo")]
         [DisableRequestSizeLimit]
-        public async Task<IActionResult> UploadVideoForPrediction([FromForm] IFormFile file)
+        public async Task<string> UploadVideoForPrediction([FromForm] IFormFile file)
         {
+            var frontEndRenderPath = string.Empty;
             if (file?.Length > 0)
             {
                 string saveImagesTo = $"{_webHostEnvironment.ContentRootPath}\\ClientApp\\build\\videos"; //cloud
@@ -59,12 +60,22 @@ namespace VideoAnalytics.Web.Controllers
 
                 var fileName = $"{Guid.NewGuid()}-{file.FileName}";
                 var filePath = Path.Combine(saveImagesTo, fileName);
+                frontEndRenderPath = ReplaceBasePath(filePath);
 
                 await using var stream = System.IO.File.Create(filePath);
                 await file.CopyToAsync(stream);
             }
 
-            return Ok();
+            return frontEndRenderPath;
+        }
+
+        private string ReplaceBasePath(string fullFilePath)
+        {
+            var basePath = $"{_webHostEnvironment.ContentRootPath}\\ClientApp\\build"; //cloud
+            // var basePath = $"{_webHostEnvironment.ContentRootPath}\\ClientApp"; //local
+            var path = fullFilePath.Replace(basePath, string.Empty);
+
+            return path;
         }
     }
 }

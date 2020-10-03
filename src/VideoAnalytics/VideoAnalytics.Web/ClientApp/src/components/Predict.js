@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import ReactPlayer from 'react-player'
 import { post } from 'axios';
 
 export class Predict extends Component {
@@ -6,15 +7,16 @@ export class Predict extends Component {
 
   constructor(props) {
     super(props);
-    this.state = { file: null, loading: false };
+    this.state = { file: null, uploadedVideoPath: null, loading: false };
 
     this.renderVideo = this.renderVideo.bind(this);
   }
 
   renderVideo() {
     return (
-      <table className='table table-striped' aria-labelledby="tabelLabel">
-      </table>
+      <div>
+        <ReactPlayer url={this.state.uploadedVideoPath} />
+      </div>
     );
   }
 
@@ -45,15 +47,22 @@ export class Predict extends Component {
 
   async submit(e) {
     e.preventDefault();
+    this.setState({ loading: true });
 
-    const url = 'customvisionprediction/uploadvideo';
     const formData = new FormData();
     formData.append('file', this.state.file);
-    const config = {
+    
+    const response = await fetch('customvisionprediction/uploadvideo', {
+      method: 'POST',
       headers: {
-        'content-type': 'multipart/form-data',
+        'Accept': 'application/json'
       },
-    };
-    return post(url, formData, config);
+      body: formData
+    });
+
+    const data = await response.json();
+
+    this.setState({ uploadedVideoPath: data });
+    this.setState({ loading: false });
   }
 }
