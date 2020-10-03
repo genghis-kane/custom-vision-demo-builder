@@ -56,7 +56,7 @@ namespace VideoAnalytics.Web.Controllers
             if (file?.Length > 0)
             {
                 string saveImagesTo = $"{_webHostEnvironment.ContentRootPath}\\ClientApp\\build\\videos"; //cloud
-                // string saveImagesTo = $"{_webHostEnvironment.ContentRootPath}\\ClientApp\\public\\videos"; //local
+                // string saveImagesTo = $"{_webHostEnvironment.ContentRootPath}\\ClientApp\\videos"; //local
 
                 var fileName = $"{Guid.NewGuid()}-{file.FileName}";
                 var filePath = Path.Combine(saveImagesTo, fileName);
