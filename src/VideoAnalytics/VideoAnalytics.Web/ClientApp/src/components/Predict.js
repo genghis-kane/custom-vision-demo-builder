@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import ReactPlayer from 'react-player'
-import { post } from 'axios';
 
 export class Predict extends Component {
   static displayName = Predict.name;
