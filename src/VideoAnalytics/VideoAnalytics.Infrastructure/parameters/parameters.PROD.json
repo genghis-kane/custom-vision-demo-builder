@@ -16,6 +16,9 @@
         "size": "S1",
         "tier": "Standard"
       }
+    },
+    "storageAccountSku": {
+      "value": "Standard_LRS"
     }
   }
 }

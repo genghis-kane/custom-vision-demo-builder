@@ -16,6 +16,9 @@
         "size": "D1",
         "tier": "Shared"
       }
+    },
+    "storageAccountSku": {
+      "value": "Standard_LRS"
     }
   }
 }
