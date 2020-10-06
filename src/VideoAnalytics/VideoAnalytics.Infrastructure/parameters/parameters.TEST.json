@@ -16,6 +16,9 @@
         "size": "B1",
         "tier": "Basic"
       }
+    },
+    "storageAccountSku": {
+      "value": "Standard_LRS"
     }
   }
 }

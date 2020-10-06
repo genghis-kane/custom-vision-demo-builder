@@ -26,6 +26,10 @@
             "defaultValue": "[concat(parameters('name'), '-web')]",
             "type": "string"
         },
+        "storageAccountName": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('name'), '-storage')]"
+        },
         "customVisionAuthoringServiceSku": {
             "type": "string",
             "defaultValue": "F0"
@@ -40,10 +44,15 @@
               "tier": "Standard",
               "name": "S1"
             }
+        },
+        "storageAccountSku": {
+            "type": "string",
+            "defaultValue": "Standard_LRS"
         }
     },
     "variables": {
-        "webAppName": "[replace(parameters('webAppName'), '_', '')]"
+        "webAppName": "[replace(parameters('webAppName'), '_', '')]",
+        "storageAccountName": "[toLower(take(replace(replace(parameters('storageAccountName'), '-', ''), '_', ''), 24))]"
     },
     "resources": [
         {
@@ -100,6 +109,17 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]"
             ]
+        },
+        {
+            "comments": "Storage account",
+            "type": "Microsoft.Storage/storageAccounts",
+            "kind": "StorageV2",
+            "apiVersion": "2018-07-01",
+            "name": "[variables('storageAccountName')]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "[parameters('storageAccountSku')]"
+            }
         }
     ],
     "outputs": {
@@ -126,6 +146,12 @@
         "webAppName": {
           "type": "string",
           "value": "[variables('webAppName')]"
+        },
+        "blobStorage": {
+            "type": "object",
+            "value": {
+              "connectionString": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2018-07-01').keys[0].value, ';EndpointSuffix=core.windows.net')]"
+            }
         }
     }
 }
