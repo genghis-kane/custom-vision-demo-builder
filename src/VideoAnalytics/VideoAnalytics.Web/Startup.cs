@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using VideoAnalytics.Common.Services;
+using VideoAnalytics.Common.Services.Interfaces;
 using VideoAnalytics.Web.Configuration;
 using VideoAnalytics.Web.Services;
 using VideoAnalytics.Web.Services.Interfaces;
@@ -75,6 +77,9 @@ namespace VideoAnalytics.Web
             }).As<ICustomVisionPredictionService>();
 
             builder.RegisterType<VideoFrameExtractionService>().As<IVideoFrameExtractionService>();
+            builder.RegisterType<AzureBlobStorageService>().WithParameter("connectionString",
+                    Configuration.GetValue<string>("BlobStorage:ConnectionString"))
+                .As<IAzureBlobStorageService>();
 
             // TODO: move to module as below
             // builder.RegisterModule(new MyApplicationModule());

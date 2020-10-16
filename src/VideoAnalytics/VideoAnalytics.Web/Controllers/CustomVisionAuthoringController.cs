@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using VideoAnalytics.Common.Services.Interfaces;
 using VideoAnalytics.Web.Services.Interfaces;
 
 namespace VideoAnalytics.Web.Controllers
@@ -13,15 +14,18 @@ namespace VideoAnalytics.Web.Controllers
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly ICustomVisionAuthoringService _authoringService;
         private readonly IVideoFrameExtractionService _videoFrameExtractionService;
+        private readonly IAzureBlobStorageService _blobStorageService;
 
         public CustomVisionAuthoringController(
             IWebHostEnvironment webHostEnvironment,
             ICustomVisionAuthoringService authoringService, 
-            IVideoFrameExtractionService videoFrameExtractionService)
+            IVideoFrameExtractionService videoFrameExtractionService,
+            IAzureBlobStorageService blobStorageService)
         {
             _webHostEnvironment = webHostEnvironment;
             _authoringService = authoringService;
             _videoFrameExtractionService = videoFrameExtractionService;
+            _blobStorageService = blobStorageService;
         }
 
         [HttpGet]
@@ -37,13 +41,20 @@ namespace VideoAnalytics.Web.Controllers
             var response = await _authoringService.GetOrCreateProject();
             
             // Ideally this would move to blob storage, but I'm not sure the ffmpeg library will handle it
-            string videoFile = $"{_webHostEnvironment.ContentRootPath}\\ClientApp\\videos\\training-video.mp4";
+            string videoFileName = "training-video.mp4";
+            string videoFile = $"{_webHostEnvironment.ContentRootPath}\\ClientApp\\videos\\{videoFileName}";
             string saveImagesTo = $"{_webHostEnvironment.ContentRootPath}\\ClientApp\\build\\frames";
             int frameStep = 15;
             int maxFrames = 50;
             
             var result = await _videoFrameExtractionService.SaveImageFrames(videoFile, saveImagesTo, frameStep, maxFrames);
             
+            // Once frames are extracted - move them to blob storage
+            foreach (var imageFilePath in result.ImageFilePaths)
+            {
+                await _blobStorageService.UploadFileToContainer("trainingvideo", imageFilePath);
+            }
+
             var paths = new List<string>();
             foreach (var imageFilePath in result.ImageFilePaths)
             {
