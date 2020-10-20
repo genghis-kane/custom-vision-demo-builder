@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using VideoAnalytics.Web.Configuration.Interfaces;
 using VideoAnalytics.Web.Services.Interfaces;
 
 namespace VideoAnalytics.Web.Controllers
@@ -23,15 +24,18 @@ namespace VideoAnalytics.Web.Controllers
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly ICustomVisionPredictionService _predictionService;
         private readonly ILogger<CustomVisionPredictionController> _logger;
+        private readonly ISystemSettings _systemSettings;
 
         public CustomVisionPredictionController(
             IWebHostEnvironment webHostEnvironment,
             ICustomVisionPredictionService predictionService,
-            ILogger<CustomVisionPredictionController> logger)
+            ILogger<CustomVisionPredictionController> logger,
+            ISystemSettings systemSettings)
         {
             _webHostEnvironment = webHostEnvironment;
             _predictionService = predictionService;
             _logger = logger;
+            _systemSettings = systemSettings;
         }
 
         [HttpGet]
@@ -55,8 +59,7 @@ namespace VideoAnalytics.Web.Controllers
             var frontEndRenderPath = string.Empty;
             if (file?.Length > 0)
             {
-                string saveImagesTo = $"{_webHostEnvironment.ContentRootPath}\\ClientApp\\build\\videos"; //cloud
-                // string saveImagesTo = $"{_webHostEnvironment.ContentRootPath}\\ClientApp\\videos"; //local
+                string saveImagesTo = $"{_webHostEnvironment.ContentRootPath}\\{_systemSettings.WorkingDirectory}\\videos";
 
                 var fileName = $"{Guid.NewGuid()}-{file.FileName}";
                 var filePath = Path.Combine(saveImagesTo, fileName);
