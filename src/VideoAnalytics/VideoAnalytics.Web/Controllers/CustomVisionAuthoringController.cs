@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using VideoAnalytics.Web.Configuration.Interfaces;
 using VideoAnalytics.Web.Services.Interfaces;
 
 namespace VideoAnalytics.Web.Controllers
@@ -13,15 +14,18 @@ namespace VideoAnalytics.Web.Controllers
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly ICustomVisionAuthoringService _authoringService;
         private readonly IVideoFrameExtractionService _videoFrameExtractionService;
+        private readonly ISystemSettings _systemSettings;
 
         public CustomVisionAuthoringController(
             IWebHostEnvironment webHostEnvironment,
             ICustomVisionAuthoringService authoringService, 
-            IVideoFrameExtractionService videoFrameExtractionService)
+            IVideoFrameExtractionService videoFrameExtractionService,
+            ISystemSettings systemSettings)
         {
             _webHostEnvironment = webHostEnvironment;
             _authoringService = authoringService;
             _videoFrameExtractionService = videoFrameExtractionService;
+            _systemSettings = systemSettings;
         }
 
         [HttpGet]
@@ -37,8 +41,8 @@ namespace VideoAnalytics.Web.Controllers
             var response = await _authoringService.GetOrCreateProject();
             
             // Ideally this would move to blob storage, but I'm not sure the ffmpeg library will handle it
-            string videoFile = $"{_webHostEnvironment.ContentRootPath}\\ClientApp\\videos\\training-video.mp4";
-            string saveImagesTo = $"{_webHostEnvironment.ContentRootPath}\\ClientApp\\build\\frames";
+            string videoFile = $"{_webHostEnvironment.ContentRootPath}\\{_systemSettings.WorkingDirectory}\\videos\\training-video.mp4";
+            string saveImagesTo = $"{_webHostEnvironment.ContentRootPath}\\{_systemSettings.WorkingDirectory}\\frames";
             int frameStep = 15;
             int maxFrames = 50;
             
@@ -47,7 +51,7 @@ namespace VideoAnalytics.Web.Controllers
             var paths = new List<string>();
             foreach (var imageFilePath in result.ImageFilePaths)
             {
-                var basePath = $"{_webHostEnvironment.ContentRootPath}\\ClientApp\\build";
+                var basePath = $"{_webHostEnvironment.ContentRootPath}\\{_systemSettings.WorkingDirectory}";
                 var path = imageFilePath.Replace(basePath, string.Empty);
                 paths.Add(path);
             }
@@ -63,7 +67,7 @@ namespace VideoAnalytics.Web.Controllers
             var paths = new List<string>();
             foreach (var imageFilePath in videoFrames)
             {
-                var basePath = $"{_webHostEnvironment.ContentRootPath}\\ClientApp\\build\\"; //this will be different between local and published, what a pain
+                var basePath = $"{_webHostEnvironment.ContentRootPath}\\{_systemSettings.WorkingDirectory}";
                 var path = $"{basePath}{imageFilePath}";
                 paths.Add(path);
             }

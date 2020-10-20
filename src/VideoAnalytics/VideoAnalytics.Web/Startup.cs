@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using VideoAnalytics.Web.Configuration;
+using VideoAnalytics.Web.Configuration.Interfaces;
 using VideoAnalytics.Web.Services;
 using VideoAnalytics.Web.Services.Interfaces;
 
@@ -42,6 +43,15 @@ namespace VideoAnalytics.Web
 
         public void ConfigureContainer(ContainerBuilder builder)
         {
+            builder.Register(ctx =>
+            {
+                var systemSettings = new SystemSettings
+                {
+                    WorkingDirectory = Configuration.GetValue<string>("FileSystem:WorkingDirectory")
+                };
+                return systemSettings;
+            }).As<ISystemSettings>();
+
             builder.Register(ctx =>
             {
                 var projectSettings = new CustomVisionProjectSettings
