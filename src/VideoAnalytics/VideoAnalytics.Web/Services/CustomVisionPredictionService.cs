@@ -1,15 +1,19 @@
-﻿using VideoAnalytics.Web.Configuration.Interfaces;
+﻿using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction;
+using VideoAnalytics.Web.Configuration.Interfaces;
 using VideoAnalytics.Web.Services.Interfaces;
 
 namespace VideoAnalytics.Web.Services
 {
     public class CustomVisionPredictionService : ICustomVisionPredictionService
     {
-        private readonly ICustomVisionServiceSettings _settings;
+        private readonly CustomVisionPredictionClient _predictionApi;
 
         public CustomVisionPredictionService(ICustomVisionServiceSettings settings)
         {
-            _settings = settings;
+            _predictionApi = new CustomVisionPredictionClient(new ApiKeyServiceClientCredentials(settings.AccountKey))
+            {
+                Endpoint = settings.AccountEndpoint
+            };
         }
     }
 }

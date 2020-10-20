@@ -40,5 +40,40 @@ namespace VideoAnalytics.Web.Services
 
             return new VideoFrameExtractionResponse { Success = true, ImageFilePaths = imageFilePaths };
         }
+
+        public async Task<VideoFrameExtractionResponse> SaveImageFramesMilliseconds(string videoFile, string saveImagesTo, int frameStepMilliseconds, int maxDurationMilliseconds)
+        {
+            var imageFilePaths = new List<string>();
+            var videoFileName = Path.GetFileNameWithoutExtension(videoFile);
+
+            IMediaInfo mediaInfo = await FFmpeg.GetMediaInfo(videoFile);
+
+            var videoDurationMilliseconds = (int)mediaInfo.VideoStreams.First().Duration.TotalMilliseconds; //let's just assume not null
+
+            var duration = (videoDurationMilliseconds <= maxDurationMilliseconds)
+                ? videoDurationMilliseconds
+                : maxDurationMilliseconds;
+
+            for (var i = 0; i < duration; i++)
+            {
+                var fromMilliseconds = (i * frameStepMilliseconds);
+                var fileName = $"{videoFileName}-{fromMilliseconds}";
+                var output = Path.Combine(saveImagesTo, fileName + ".png");
+
+                if (fromMilliseconds > duration) break;
+                if (File.Exists(output))
+                {
+                    imageFilePaths.Add(output);
+                    continue;
+                }
+
+                IConversion conversion = await FFmpeg.Conversions.FromSnippet.Snapshot(videoFile, output, TimeSpan.FromMilliseconds(fromMilliseconds));
+                IConversionResult result = await conversion.Start();
+
+                imageFilePaths.Add(output);
+            }
+
+            return new VideoFrameExtractionResponse { Success = true, ImageFilePaths = imageFilePaths };
+        }
     }
 }
