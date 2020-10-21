@@ -28,12 +28,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="ClientApp\frames\info.txt" />
-    <None Remove="ClientApp\frames\prediction\info.txt" />
-    <None Remove="ClientApp\frames\training\info.txt" />
-    <None Remove="ClientApp\videos\prediction\info.txt" />
-    <None Remove="ClientApp\videos\training-video.mp4" />
-    <None Remove="ClientApp\videos\training\info.txt" />
+    <None Remove="ClientApp\public\frames\prediction\info.txt" />
+    <None Remove="ClientApp\public\frames\training\info.txt" />
+    <None Remove="ClientApp\public\videos\prediction\info.txt" />
+    <None Remove="ClientApp\public\videos\training\info.txt" />
+    <None Remove="ClientApp\stage\frames\prediction\info.txt" />
+    <None Remove="ClientApp\stage\frames\training\info.txt" />
+    <None Remove="ClientApp\stage\videos\prediction\info.txt" />
+    <None Remove="ClientApp\stage\videos\training\info.txt" />
     <None Remove="FFMPEG\ffmpeg.exe" />
     <None Remove="FFMPEG\ffplay.exe" />
     <None Remove="FFMPEG\ffprobe.exe" />
@@ -81,27 +83,35 @@
   </Target>
 
   <ItemGroup>
-    <Content Include="ClientApp\frames\info.txt">
+    <Content Include="ClientApp\public\frames\prediction\info.txt">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Include="ClientApp\frames\prediction\info.txt">
+    <Content Include="ClientApp\public\frames\training\info.txt">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Include="ClientApp\frames\training\info.txt">
+    <Content Include="ClientApp\public\videos\prediction\info.txt">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Include="ClientApp\videos\prediction\info.txt">
+    <Content Include="ClientApp\public\videos\training\info.txt">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Include="ClientApp\videos\training-video.mp4">
+    <Content Include="ClientApp\stage\frames\prediction\info.txt">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Include="ClientApp\videos\training\info.txt">
+    <Content Include="ClientApp\stage\frames\training\info.txt">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="ClientApp\stage\videos\prediction\info.txt">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="ClientApp\stage\videos\training\info.txt">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>

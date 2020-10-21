@@ -41,8 +41,8 @@ namespace VideoAnalytics.Web.Controllers
             var response = await _authoringService.GetOrCreateProject();
             
             // Ideally this would move to blob storage, but I'm not sure the ffmpeg library will handle it
-            string videoFile = $"{_webHostEnvironment.ContentRootPath}\\{_systemSettings.WorkingDirectory}\\videos\\training-video.mp4";
-            string saveImagesTo = $"{_webHostEnvironment.ContentRootPath}\\{_systemSettings.WorkingDirectory}\\frames";
+            string videoFile = $"{_webHostEnvironment.ContentRootPath}\\{_systemSettings.WorkingDirectory}\\videos\\training\\training-video.mp4";
+            string saveImagesTo = $"{_webHostEnvironment.ContentRootPath}\\{_systemSettings.WorkingDirectory}\\frames\\training";
             int frameStep = 15;
             int maxFrames = 50;
             

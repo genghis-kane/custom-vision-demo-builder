@@ -39,7 +39,7 @@ namespace VideoAnalytics.Web.Controllers
             if (file?.Length > 0)
             {
                 // 1. Upload video to file system
-                string saveVideoTo = $"{_webHostEnvironment.ContentRootPath}\\{_systemSettings.WorkingDirectory}\\videos";
+                string saveVideoTo = $"{_webHostEnvironment.ContentRootPath}\\{_systemSettings.WorkingDirectory}\\videos\\prediction";
 
                 var fileName = $"{Guid.NewGuid()}-{file.FileName}";
                 var filePath = Path.Combine(saveVideoTo, fileName);
