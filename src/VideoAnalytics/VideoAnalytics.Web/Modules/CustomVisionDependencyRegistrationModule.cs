@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using VideoAnalytics.Web.Configuration;
+using VideoAnalytics.Web.Configuration.Interfaces;
 using VideoAnalytics.Web.Services;
 using VideoAnalytics.Web.Services.Interfaces;
 
@@ -9,37 +10,34 @@ namespace VideoAnalytics.Web.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.Register(ctx =>
+            var projectSettings = new CustomVisionProjectSettings
             {
-                var projectSettings = new CustomVisionProjectSettings
-                {
-                    ProjectName = "",
-                    ProjectType = ""
-                };
+                ProjectName = "",
+                ProjectType = ""
+            };
 
-                var serviceSettings = new CustomVisionAuthoringSettings
-                {
-                    AccountRegion = "",
-                    AccountName = "",
-                    AccountKey = ""
-                };
-
-                return new CustomVisionAuthoringService(projectSettings, serviceSettings);
-
-            }).As<ICustomVisionAuthoringService>();
-
-            builder.Register(ctx =>
+            var authoringSettings = new CustomVisionAuthoringSettings
             {
-                var serviceSettings = new CustomVisionPredictionSettings
-                {
-                    AccountRegion = "",
-                    AccountName = "",
-                    AccountKey = ""
-                };
+                AccountRegion = "",
+                AccountName = "",
+                AccountKey = ""
+            };
 
-                return new CustomVisionPredictionService(serviceSettings);
+            var predictionSettings = new CustomVisionAuthoringSettings
+            {
+                AccountRegion = "",
+                AccountName = "",
+                AccountKey = ""
+            };
 
-            }).As<ICustomVisionAuthoringService>();
+            var customVisionProjectService = new CustomVisionProjectService(projectSettings, authoringSettings);
+            builder.Register(ctx => customVisionProjectService).As<ICustomVisionProjectService>();
+
+            builder.Register(ctx => new CustomVisionAuthoringService(customVisionProjectService, projectSettings, authoringSettings)).As<ICustomVisionAuthoringService>();
+
+            builder.Register(ctx => new CustomVisionPredictionService(customVisionProjectService, projectSettings, predictionSettings)).As<ICustomVisionPredictionService>();
+
+            builder.RegisterType<VideoFrameExtractionService>().As<IVideoFrameExtractionService>();
         }
     }
 }

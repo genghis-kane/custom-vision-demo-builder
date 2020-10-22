@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using VideoAnalytics.Web.Configuration.Interfaces;
 using VideoAnalytics.Web.Services.Interfaces;
 
@@ -16,39 +13,21 @@ namespace VideoAnalytics.Web.Controllers
     [Route("[controller]")]
     public class CustomVisionPredictionController : ControllerBase
     {
-        private static readonly string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
-
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly ICustomVisionPredictionService _predictionService;
-        private readonly ILogger<CustomVisionPredictionController> _logger;
+        private readonly IVideoFrameExtractionService _videoFrameExtractionService;
         private readonly ISystemSettings _systemSettings;
 
         public CustomVisionPredictionController(
             IWebHostEnvironment webHostEnvironment,
             ICustomVisionPredictionService predictionService,
-            ILogger<CustomVisionPredictionController> logger,
+            IVideoFrameExtractionService videoFrameExtractionService,
             ISystemSettings systemSettings)
         {
             _webHostEnvironment = webHostEnvironment;
             _predictionService = predictionService;
-            _logger = logger;
+            _videoFrameExtractionService = videoFrameExtractionService;
             _systemSettings = systemSettings;
-        }
-
-        [HttpGet]
-        public IEnumerable<WeatherForecast> Get()
-        {
-            var rng = new Random();
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            {
-                Date = DateTime.Now.AddDays(index),
-                TemperatureC = rng.Next(-20, 55),
-                Summary = Summaries[rng.Next(Summaries.Length)]
-            })
-            .ToArray();
         }
 
         [HttpPost]
@@ -59,14 +38,23 @@ namespace VideoAnalytics.Web.Controllers
             var frontEndRenderPath = string.Empty;
             if (file?.Length > 0)
             {
-                string saveImagesTo = $"{_webHostEnvironment.ContentRootPath}\\{_systemSettings.WorkingDirectory}\\videos";
+                // 1. Upload video to file system
+                string saveVideoTo = $"{_webHostEnvironment.ContentRootPath}\\{_systemSettings.WorkingDirectory}\\videos\\prediction";
 
                 var fileName = $"{Guid.NewGuid()}-{file.FileName}";
-                var filePath = Path.Combine(saveImagesTo, fileName);
+                var filePath = Path.Combine(saveVideoTo, fileName);
                 frontEndRenderPath = ReplaceBasePath(filePath);
 
-                await using var stream = System.IO.File.Create(filePath);
-                await file.CopyToAsync(stream);
+                await using (var stream = System.IO.File.Create(filePath))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                // 2. Extract image frames to send for prediction
+                string saveFramesTo = $"{_webHostEnvironment.ContentRootPath}\\{_systemSettings.WorkingDirectory}\\frames\\prediction";
+                var extractedFrames = await _videoFrameExtractionService.SaveImageFramesMilliseconds(filePath, saveFramesTo, 300, 10000);
+
+                var responses = await _predictionService.GetPredictionsFromFrameList(extractedFrames.ImageFilePaths);
             }
 
             return frontEndRenderPath;
@@ -74,8 +62,7 @@ namespace VideoAnalytics.Web.Controllers
 
         private string ReplaceBasePath(string fullFilePath)
         {
-            var basePath = $"{_webHostEnvironment.ContentRootPath}\\ClientApp\\build"; //cloud
-            // var basePath = $"{_webHostEnvironment.ContentRootPath}\\ClientApp"; //local
+            var basePath = $"{_webHostEnvironment.ContentRootPath}\\{_systemSettings.WorkingDirectory}"; //cloud
             var path = fullFilePath.Replace(basePath, string.Empty);
 
             return path;

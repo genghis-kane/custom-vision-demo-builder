@@ -6,7 +6,7 @@ export class Predict extends Component {
 
   constructor(props) {
     super(props);
-    this.state = { file: null, uploadedVideoPath: null, loading: false };
+    this.state = { file: null, uploadedVideoPath: null, loading: false, playing: false };
 
     this.renderVideo = this.renderVideo.bind(this);
   }
@@ -14,7 +14,9 @@ export class Predict extends Component {
   renderVideo() {
     return (
       <div>
-        <ReactPlayer url={this.state.uploadedVideoPath} />
+        <ReactPlayer url={this.state.uploadedVideoPath} playing={this.state.playing} loop={true} muted={true} />
+        <button onClick={() => this.setState({ playing: true })}>Play</button>
+        <button onClick={() => this.setState({ playing: false })}>Stop</button>
       </div>
     );
   }

@@ -12,17 +12,20 @@ namespace VideoAnalytics.Web.Controllers
     public class CustomVisionAuthoringController : ControllerBase
     {
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly ICustomVisionProjectService _projectService;
         private readonly ICustomVisionAuthoringService _authoringService;
         private readonly IVideoFrameExtractionService _videoFrameExtractionService;
         private readonly ISystemSettings _systemSettings;
 
         public CustomVisionAuthoringController(
             IWebHostEnvironment webHostEnvironment,
+            ICustomVisionProjectService projectService, 
             ICustomVisionAuthoringService authoringService, 
             IVideoFrameExtractionService videoFrameExtractionService,
             ISystemSettings systemSettings)
         {
             _webHostEnvironment = webHostEnvironment;
+            _projectService = projectService;
             _authoringService = authoringService;
             _videoFrameExtractionService = videoFrameExtractionService;
             _systemSettings = systemSettings;
@@ -38,11 +41,11 @@ namespace VideoAnalytics.Web.Controllers
             // return new List<string> { img1, img2, img3 };
 
             
-            var response = await _authoringService.GetOrCreateProject();
+            var response = await _projectService.GetOrCreateProject();
             
             // Ideally this would move to blob storage, but I'm not sure the ffmpeg library will handle it
-            string videoFile = $"{_webHostEnvironment.ContentRootPath}\\{_systemSettings.WorkingDirectory}\\videos\\training-video.mp4";
-            string saveImagesTo = $"{_webHostEnvironment.ContentRootPath}\\{_systemSettings.WorkingDirectory}\\frames";
+            string videoFile = $"{_webHostEnvironment.ContentRootPath}\\{_systemSettings.WorkingDirectory}\\videos\\training\\training-video.mp4";
+            string saveImagesTo = $"{_webHostEnvironment.ContentRootPath}\\{_systemSettings.WorkingDirectory}\\frames\\training";
             int frameStep = 15;
             int maxFrames = 50;
             
