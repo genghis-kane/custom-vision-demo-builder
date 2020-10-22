@@ -43,6 +43,26 @@ namespace VideoAnalytics.Web
 
         public void ConfigureContainer(ContainerBuilder builder)
         {
+            var projectSettings = new CustomVisionProjectSettings
+            {
+                ProjectName = Configuration.GetValue<string>("CustomVision:Project:Name"),
+                ProjectType = Configuration.GetValue<string>("CustomVision:Project:Type")
+            };
+
+            var authoringSettings = new CustomVisionAuthoringSettings
+            {
+                AccountRegion = Configuration.GetValue<string>("CustomVision:AuthoringService:AccountRegion"),
+                AccountName = Configuration.GetValue<string>("CustomVision:AuthoringService:AccountName"),
+                AccountKey = Configuration.GetValue<string>("CustomVision:AuthoringService:AccountKey")
+            };
+
+            var predictionSettings = new CustomVisionPredictionSettings
+            {
+                AccountRegion = Configuration.GetValue<string>("CustomVision:PredictionService:AccountRegion"),
+                AccountName = Configuration.GetValue<string>("CustomVision:PredictionService:AccountName"),
+                AccountKey = Configuration.GetValue<string>("CustomVision:PredictionService:AccountKey")
+            };
+
             builder.Register(ctx =>
             {
                 var systemSettings = new SystemSettings
@@ -52,37 +72,12 @@ namespace VideoAnalytics.Web
                 return systemSettings;
             }).As<ISystemSettings>();
 
-            builder.Register(ctx =>
-            {
-                var projectSettings = new CustomVisionProjectSettings
-                {
-                    ProjectName = Configuration.GetValue<string>("CustomVision:Project:Name"),
-                    ProjectType = Configuration.GetValue<string>("CustomVision:Project:Type")
-                };
+            var customVisionProjectService = new CustomVisionProjectService(projectSettings, authoringSettings);
+            builder.Register(ctx => customVisionProjectService).As<ICustomVisionProjectService>();
 
-                var serviceSettings = new CustomVisionAuthoringSettings
-                {
-                    AccountRegion = Configuration.GetValue<string>("CustomVision:AuthoringService:AccountRegion"),
-                    AccountName = Configuration.GetValue<string>("CustomVision:AuthoringService:AccountName"),
-                    AccountKey = Configuration.GetValue<string>("CustomVision:AuthoringService:AccountKey")
-                };
+            builder.Register(ctx => new CustomVisionAuthoringService(customVisionProjectService, projectSettings, authoringSettings)).As<ICustomVisionAuthoringService>();
 
-                return new CustomVisionAuthoringService(projectSettings, serviceSettings);
-
-            }).As<ICustomVisionAuthoringService>();
-
-            builder.Register(ctx =>
-            {
-                var serviceSettings = new CustomVisionPredictionSettings
-                {
-                    AccountRegion = Configuration.GetValue<string>("CustomVision:PredictionService:AccountRegion"),
-                    AccountName = Configuration.GetValue<string>("CustomVision:PredictionService:AccountName"),
-                    AccountKey = Configuration.GetValue<string>("CustomVision:PredictionService:AccountKey")
-                };
-
-                return new CustomVisionPredictionService(serviceSettings);
-
-            }).As<ICustomVisionPredictionService>();
+            builder.Register(ctx => new CustomVisionPredictionService(customVisionProjectService, projectSettings, predictionSettings)).As<ICustomVisionPredictionService>();
 
             builder.RegisterType<VideoFrameExtractionService>().As<IVideoFrameExtractionService>();
 

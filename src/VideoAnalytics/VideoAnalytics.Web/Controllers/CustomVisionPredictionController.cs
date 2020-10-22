@@ -52,7 +52,9 @@ namespace VideoAnalytics.Web.Controllers
 
                 // 2. Extract image frames to send for prediction
                 string saveFramesTo = $"{_webHostEnvironment.ContentRootPath}\\{_systemSettings.WorkingDirectory}\\frames\\prediction";
-                await _videoFrameExtractionService.SaveImageFramesMilliseconds(filePath, saveFramesTo, 300, 10000);
+                var extractedFrames = await _videoFrameExtractionService.SaveImageFramesMilliseconds(filePath, saveFramesTo, 300, 10000);
+
+                var responses = await _predictionService.GetPredictionsFromFrameList(extractedFrames.ImageFilePaths);
             }
 
             return frontEndRenderPath;
