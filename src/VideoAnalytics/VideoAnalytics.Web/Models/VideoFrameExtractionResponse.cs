@@ -6,6 +6,6 @@ namespace VideoAnalytics.Web.Models
     {
         public bool Success { get; set; }
 
-        public IList<string> ImageFilePaths { get; set; }
+        public IList<VideoFrame> VideoFrames { get; set; }
     }
 }

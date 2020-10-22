@@ -29,25 +29,25 @@ namespace VideoAnalytics.Web.Services
             };
         }
 
-        public async Task<IEnumerable<PredictionResponse>> GetPredictionsFromFrameList(IEnumerable<string> framePaths)
+        public async Task<IEnumerable<PredictionResponse>> GetPredictionsFromFrameList(IEnumerable<VideoFrame> requests)
         {
             var predictionResponses = new List<PredictionResponse>();
 
             var projectId = await _projectService.GetProjectId(_projectSettings.ProjectName);
-            foreach (var framePath in framePaths)
+            foreach (var request in requests)
             {
-                var predictionResponse = await GetFramePrediction(framePath, projectId);
+                var predictionResponse = await GetFramePrediction(request, projectId);
                 predictionResponses.Add(predictionResponse);
             }
 
             return predictionResponses;
         }
 
-        private async Task<PredictionResponse> GetFramePrediction(string framePath, Guid projectId)
+        private async Task<PredictionResponse> GetFramePrediction(VideoFrame request, Guid projectId)
         {
-            var predictionResponse = new PredictionResponse { Timestamp = DateTime.Now };
+            var predictionResponse = new PredictionResponse { Timestamp = DateTime.Now, Millisecond = request.Millisecond };
 
-            using (var stream = File.OpenRead(framePath))
+            using (var stream = File.OpenRead(request.FilePath))
             {
                 var response = await _predictionApi.DetectImageWithHttpMessagesAsync(
                     projectId,

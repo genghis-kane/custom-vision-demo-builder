@@ -46,16 +46,16 @@ namespace VideoAnalytics.Web.Controllers
             // Ideally this would move to blob storage, but I'm not sure the ffmpeg library will handle it
             string videoFile = $"{_webHostEnvironment.ContentRootPath}\\{_systemSettings.WorkingDirectory}\\videos\\training\\training-video.mp4";
             string saveImagesTo = $"{_webHostEnvironment.ContentRootPath}\\{_systemSettings.WorkingDirectory}\\frames\\training";
-            int frameStep = 15;
-            int maxFrames = 50;
+            int frameStep = 15000;
+            int maxFrames = 150000;
             
             var result = await _videoFrameExtractionService.SaveImageFrames(videoFile, saveImagesTo, frameStep, maxFrames);
             
             var paths = new List<string>();
-            foreach (var imageFilePath in result.ImageFilePaths)
+            foreach (var videoFrame in result.VideoFrames)
             {
                 var basePath = $"{_webHostEnvironment.ContentRootPath}\\{_systemSettings.WorkingDirectory}";
-                var path = imageFilePath.Replace(basePath, string.Empty);
+                var path = videoFrame.FilePath.Replace(basePath, string.Empty);
                 paths.Add(path);
             }
             
