@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using VideoAnalytics.Web.Configuration.Interfaces;
+using VideoAnalytics.Web.Models;
 using VideoAnalytics.Web.Services.Interfaces;
 
 namespace VideoAnalytics.Web.Controllers
@@ -33,9 +36,11 @@ namespace VideoAnalytics.Web.Controllers
         [HttpPost]
         [Route("uploadvideo")]
         [DisableRequestSizeLimit]
-        public async Task<string> UploadVideoForPrediction([FromForm] IFormFile file)
+        public async Task<VideoPredictionResponse> UploadVideoForPrediction([FromForm] IFormFile file)
         {
             var frontEndRenderPath = string.Empty;
+            var results = new List<PredictionResponse>();
+
             if (file?.Length > 0)
             {
                 // 1. Upload video to file system
@@ -52,12 +57,18 @@ namespace VideoAnalytics.Web.Controllers
 
                 // 2. Extract image frames to send for prediction
                 string saveFramesTo = $"{_webHostEnvironment.ContentRootPath}\\{_systemSettings.WorkingDirectory}\\frames\\prediction";
-                var extractedFrames = await _videoFrameExtractionService.SaveImageFramesMilliseconds(filePath, saveFramesTo, 300, 10000);
+                int frameStepMilliseconds = 300;
+                int maxDurationMilliseconds = 10000;
+                var extractedFrames = await _videoFrameExtractionService.SaveImageFrames(filePath, saveFramesTo, frameStepMilliseconds, maxDurationMilliseconds);
 
-                var responses = await _predictionService.GetPredictionsFromFrameList(extractedFrames.ImageFilePaths);
+                results = (await _predictionService.GetPredictionsFromFrameList(extractedFrames.VideoFrames)).ToList();
             }
 
-            return frontEndRenderPath;
+            return new VideoPredictionResponse
+            {
+                VideoFilePath = frontEndRenderPath,
+                Predictions = results
+            };
         }
 
         private string ReplaceBasePath(string fullFilePath)
