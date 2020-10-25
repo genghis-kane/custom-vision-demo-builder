@@ -13,17 +13,12 @@ export class Demo extends Component {
     this.boundingBoxBorderStyle = `3px solid ${this.boundingBoxColor}`;
 
     this.state = { 
-      predictions: [], 
-      boundingBoxStyle: {
-        position: 'absolute',
-        border: this.boundingBoxBorderStyle,
-        top: 0,
-        left: 0,
-        width: 0,
-        height: 0
-      },
+      predictions: [],
+      currentFramePrediction: {},
       loading: false, 
-      playing: false 
+      playing: false,
+      videoPlayerHeight: 0,
+      videoPlayerWidth: 0
     };
 
     this.videoPlayerRef = React.createRef();
@@ -35,9 +30,29 @@ export class Demo extends Component {
 
   componentDidMount() {
     this.populatePredictions();
+
+    var videoPlayerHeight = this.videoPlayerRef.current.wrapper.clientHeight;
+    var videoPlayerWidth = this.videoPlayerRef.current.wrapper.clientWidth;
+    this.setState({ videoPlayerHeight: videoPlayerHeight, videoPlayerWidth: videoPlayerWidth });
   }
 
   render() {
+    var boundingBoxes;
+    if (this.state.currentFramePrediction && this.state.currentFramePrediction.predictionObjects) {
+      boundingBoxes = this.state.currentFramePrediction.predictionObjects.map(p => {        
+        var boundingBoxStyle = {
+          position: 'absolute',
+          border: this.boundingBoxBorderStyle,
+          top: (p.boundingBox.top * this.state.videoPlayerHeight),
+          left: p.boundingBox.left * this.state.videoPlayerWidth,
+          width: p.boundingBox.width * this.state.videoPlayerWidth,
+          height: p.boundingBox.height * this.state.videoPlayerHeight
+        };
+        // boundingBox.fillText(prediction.label, 0, 0) // let's leave this for now so I can go to bed
+        return <canvas ref={this.boundingBoxRef} style={boundingBoxStyle} className="bounding-box"></canvas>
+      });
+    }
+    
     return (
       <div className="demo-container">
         <div className="video-container">
@@ -48,7 +63,7 @@ export class Demo extends Component {
             loop={true} 
             muted={true} 
           />
-          <canvas ref={this.boundingBoxRef} style={this.state.boundingBoxStyle} className="bounding-box"></canvas>
+          {boundingBoxes}
           <button onClick={this.startVideo}>Play</button>
           <button onClick={() => this.setState({ playing: false })}>Stop</button>
         </div>
@@ -57,43 +72,14 @@ export class Demo extends Component {
   }
 
   startVideo() {
-    var videoPlayerHeight = this.videoPlayerRef.current.wrapper.clientHeight;
-    var videoPlayerWidth = this.videoPlayerRef.current.wrapper.clientWidth;
-    var boundingBox = this.boundingBoxRef.current.getContext("2d");
-    boundingBox.fillStyle = this.boundingBoxColor;
-    boundingBox.font = '18px Arial';
-    boundingBox.textAlign = 'start';
-    boundingBox.textBaseline = 'start';
-
     this.setState({ playing: true });
 
     var index = 0;
     setInterval(() => {
       var currentFrame = this.state.predictions.find(f => f.millisecond === index);
-
       if (currentFrame) {
-        var predictionObjects = currentFrame.predictionObjects;
-        
-        if (predictionObjects && predictionObjects.length > 0) {
-          var prediction = predictionObjects[0]; // we'll just start with one for now
-          
-          if (prediction) {
-            this.setState({
-              boundingBoxStyle: {
-                position: 'absolute',
-                border: this.boundingBoxBorderStyle,
-                top: (prediction.boundingBox.top * videoPlayerHeight),
-                left: prediction.boundingBox.left * videoPlayerWidth,
-                width: prediction.boundingBox.width * videoPlayerWidth,
-                height: prediction.boundingBox.height * videoPlayerHeight
-              }
-            });
-
-            // boundingBox.fillText(prediction.label, 0, 0) // let's leave this for now so I can go to bed
-          }
-        } 
+        this.setState({ currentFramePrediction: currentFrame });
       }
-
       index+=300; //this will be a problem...
     }, 300);
   }
