@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Autofac;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using VideoAnalytics.Web.Configuration;
 using VideoAnalytics.Web.Configuration.Interfaces;
+using VideoAnalytics.Web.Models;
 using VideoAnalytics.Web.Services;
 using VideoAnalytics.Web.Services.Interfaces;
 
@@ -71,6 +73,16 @@ namespace VideoAnalytics.Web
                 };
                 return systemSettings;
             }).As<ISystemSettings>();
+
+            builder.Register(ctx =>
+            {
+                var demoSettingsEntries = Configuration.GetSection("Demos").Get<List<DemoSetting>>();
+                var demoSettings = new DemoSettings
+                {
+                    Settings = demoSettingsEntries
+                };
+                return demoSettings;
+            }).As<IDemoSettings>();
 
             var customVisionProjectService = new CustomVisionProjectService(projectSettings, authoringSettings);
             builder.Register(ctx => customVisionProjectService).As<ICustomVisionProjectService>();
