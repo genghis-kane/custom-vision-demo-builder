@@ -51,7 +51,7 @@ namespace VideoAnalytics.Web.Services
             {
                 var response = await _predictionApi.DetectImageWithHttpMessagesAsync(
                     projectId,
-                    "Iteration2",
+                    "Iteration3",
                     stream
                 );
 

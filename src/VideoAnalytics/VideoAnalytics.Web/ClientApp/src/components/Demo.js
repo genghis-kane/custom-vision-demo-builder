@@ -80,8 +80,8 @@ export class Demo extends Component {
       if (currentFrame) {
         this.setState({ currentFramePrediction: currentFrame });
       }
-      index+=300; //this will be a problem...
-    }, 300);
+      index+=150; //this will be a problem...
+    }, 150);
   }
 
   async populatePredictions() {
