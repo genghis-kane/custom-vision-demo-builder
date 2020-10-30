@@ -39,17 +39,29 @@ export class Demo extends Component {
   render() {
     var boundingBoxes;
     if (this.state.currentFramePrediction && this.state.currentFramePrediction.predictionObjects) {
-      boundingBoxes = this.state.currentFramePrediction.predictionObjects.map(p => {        
+      boundingBoxes = this.state.currentFramePrediction.predictionObjects.map(p => {  
+        var labelStyle = {
+          position: 'absolute',
+          fontSize: '0.5rem',
+          color: 'white',
+          backgroundColor: this.boundingBoxColor,
+          top: ((p.boundingBox.top * this.state.videoPlayerHeight))-10,
+          left: p.boundingBox.left * this.state.videoPlayerWidth,
+          width: p.boundingBox.width * this.state.videoPlayerWidth,
+          height: 10
+        }
+        
         var boundingBoxStyle = {
           position: 'absolute',
+          background: 'rgba(255, 255, 255, 0)',
           border: this.boundingBoxBorderStyle,
           top: (p.boundingBox.top * this.state.videoPlayerHeight),
           left: p.boundingBox.left * this.state.videoPlayerWidth,
           width: p.boundingBox.width * this.state.videoPlayerWidth,
           height: p.boundingBox.height * this.state.videoPlayerHeight
         };
-        // boundingBox.fillText(prediction.label, 0, 0) // let's leave this for now so I can go to bed
-        return <canvas ref={this.boundingBoxRef} style={boundingBoxStyle} className="bounding-box"></canvas>
+
+        return <div><p style={labelStyle}>{`${p.label} (${p.confidence.toFixed(2)})`}</p><div style={boundingBoxStyle}></div></div>
       });
     }
     
