@@ -10,6 +10,7 @@ export class VideoFrameExtractor extends Component {
   constructor(props) {
     super(props);
     this.state = { 
+      step: 0,
       videoFile: null,
       frameStepMilliseconds: 300,
       maxDurationMilliseconds: 10000,
@@ -40,58 +41,67 @@ export class VideoFrameExtractor extends Component {
           <div class='row'>
             <p>This tool can be used to extract image frames out of an uploaded video. You will be given the option to select which extracted frames should be published up to your Custom Vision project. From there, they can be used to train your AI model.</p>
           </div>
-          <div class='row'>
-            <form onSubmit={e => this.submit(e)}>
-              <div className="form-group">
-                <label for='videoFile' 
-                       data-tip='Upload a video to extract image frames from'>
-                         Upload video file: 
-                </label>
-                <ReactTooltip />
-                <input id='videoFile' 
-                       name='videoFile'
-                       type='file' 
-                       className='form-control-file'
-                       onChange={this.handleInputChange} />
-              </div>
-              <div className="form-group">
-                <label for='frameStepMilliseconds' 
-                       data-tip='Extract an image frame every [x] milliseconds'>
-                         Frame step (ms): 
-                </label>
-                <input id='frameStepMilliseconds' 
-                       name='frameStepMilliseconds' 
-                       type='text' 
-                       className='form-control' 
-                       value={this.state.frameStepMilliseconds} 
-                       onChange={this.handleInputChange} />
-                <ReactTooltip />
-              </div>
-              <div className="form-group">
-                <label for='maxDurationMilliseconds' 
-                       data-tip='Stop processing after this number of milliseconds'>
-                         Max duration (ms): 
-                </label>
-                <input id='maxDurationMilliseconds' 
-                       name='maxDurationMilliseconds' 
-                       type='text' 
-                       className='form-control' 
-                       value={this.state.maxDurationMilliseconds} 
-                       onChange={this.handleInputChange} />
-                <ReactTooltip />
-              </div>
-              <button type='submit' className='btn btn-primary'>Upload</button>
-            </form>
+          <div style={{ display: this.state.loading ? 'block' : 'none' }}>
+            <div className='row'>
+              <p>Loading...</p>
+            </div>
           </div>
-
-          <div className='row'>
-            <div className='frame-list-container'>
-              <p>Choose frames to upload to the Custom Vision portal:</p>
-            <Gallery images={this.state.frames} onSelectImage={this.onSelectImage} enableLightbox={false}/>
+          <div style={{ display: (!this.state.loading && this.state.step === 0) ? 'block' : 'none' }}>
+            <div class='row'>
+              <form onSubmit={e => this.submit(e)}>
+                <div className="form-group">
+                  <label for='videoFile' 
+                        data-tip='Upload a video to extract image frames from'>
+                          Upload video file: 
+                  </label>
+                  <ReactTooltip />
+                  <input id='videoFile' 
+                        name='videoFile'
+                        type='file' 
+                        className='form-control-file'
+                        onChange={this.handleInputChange} />
+                </div>
+                <div className="form-group">
+                  <label for='frameStepMilliseconds' 
+                        data-tip='Extract an image frame every [x] milliseconds'>
+                          Frame step (ms): 
+                  </label>
+                  <input id='frameStepMilliseconds' 
+                        name='frameStepMilliseconds' 
+                        type='text' 
+                        className='form-control' 
+                        value={this.state.frameStepMilliseconds} 
+                        onChange={this.handleInputChange} />
+                  <ReactTooltip />
+                </div>
+                <div className="form-group">
+                  <label for='maxDurationMilliseconds' 
+                        data-tip='Stop processing after this number of milliseconds'>
+                          Max duration (ms): 
+                  </label>
+                  <input id='maxDurationMilliseconds' 
+                        name='maxDurationMilliseconds' 
+                        type='text' 
+                        className='form-control' 
+                        value={this.state.maxDurationMilliseconds} 
+                        onChange={this.handleInputChange} />
+                  <ReactTooltip />
+                </div>
+                <button type='submit' className='btn btn-primary'>Upload</button>
+              </form>
+            </div>
           </div>
-          </div>
-          <div className='row'>
-            <button type='button' className='btn btn-primary' onClick={this.uploadSelectedImages}>Upload</button>
+         
+          <div style={{ display: (!this.state.loading && this.state.step === 1) ? 'block' : 'none' }}>
+            <div className='row'>
+              <div className='frame-list-container'>
+                <p>Choose frames to upload to the Custom Vision portal:</p>
+              <Gallery images={this.state.frames} onSelectImage={this.onSelectImage} enableLightbox={false}/>
+            </div>
+            </div>
+            <div className='row'>
+              <button type='button' className='btn btn-primary' onClick={this.uploadSelectedImages}>Upload</button>
+            </div>
           </div>
         </div>
       </div>
@@ -137,7 +147,7 @@ export class VideoFrameExtractor extends Component {
       }
     });
 
-    this.setState({ frames: imageFrames, loading: false });
+    this.setState({ frames: imageFrames, step: 1, loading: false });
   }
 
   async uploadSelectedImages() {
