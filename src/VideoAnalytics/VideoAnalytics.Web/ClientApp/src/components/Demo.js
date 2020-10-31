@@ -9,12 +9,15 @@ export class Demo extends Component {
   constructor(props) {
     super(props);
 
+    this.setIntervalId = 0;
+
     this.boundingBoxColor = this.props.boundingBoxColor;
     this.boundingBoxBorderStyle = `3px solid ${this.boundingBoxColor}`;
 
     this.state = { 
       predictions: [],
       currentFramePrediction: {},
+      currentFramePredictionIndex: 0,
       loading: false, 
       playing: false,
       videoPlayerHeight: 0,
@@ -26,6 +29,7 @@ export class Demo extends Component {
 
     this.populatePredictions = this.populatePredictions.bind(this);
     this.startVideo = this.startVideo.bind(this);
+    this.stopVideo = this.stopVideo.bind(this);
   }
 
   componentDidMount() {
@@ -77,7 +81,7 @@ export class Demo extends Component {
           />
           {boundingBoxes}
           <button onClick={this.startVideo}>Play</button>
-          <button onClick={() => this.setState({ playing: false })}>Stop</button>
+          <button onClick={this.stopVideo}>Stop</button>
         </div>
       </div>
     );
@@ -86,14 +90,18 @@ export class Demo extends Component {
   startVideo() {
     this.setState({ playing: true });
 
-    var index = 0;
-    setInterval(() => {
-      var currentFrame = this.state.predictions.find(f => f.millisecond === index);
+    this.setIntervalId = setInterval(() => {
+      var currentFrame = this.state.predictions.find(f => f.millisecond === this.state.currentFramePredictionIndex);
       if (currentFrame) {
         this.setState({ currentFramePrediction: currentFrame });
       }
-      index+=150; //this will be a problem...
+      this.setState({ currentFramePredictionIndex: (this.state.currentFramePredictionIndex+150) })
     }, 150);
+  }
+
+  stopVideo() {
+    this.setState({ playing: false });
+    clearInterval(this.setIntervalId);
   }
 
   async populatePredictions() {
