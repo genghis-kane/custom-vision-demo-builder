@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using VideoAnalytics.Web.Models;
 
@@ -6,7 +7,8 @@ namespace VideoAnalytics.Web.Services.Interfaces
 {
     public interface ICustomVisionProjectService
     {
-        Task<CustomVisionOperationResponse> GetOrCreateProject();
+        Task<IEnumerable<string>> ListCustomVisionProjects();
+        Task<CustomVisionOperationResponse> GetOrCreateProjectByName(string projectName);
         Task<bool> ProjectExists(string projectName);
         Task<Guid> GetProjectId(string projectName);
     }
