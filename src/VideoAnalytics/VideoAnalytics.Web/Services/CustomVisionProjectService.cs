@@ -27,9 +27,16 @@ namespace VideoAnalytics.Web.Services
             };
         }
 
-        public async Task<CustomVisionOperationResponse> GetOrCreateProject()
+        public async Task<IEnumerable<string>> ListCustomVisionProjects()
         {
-            if (await ProjectExists(_projectSettings.ProjectName))
+            IList<Project> projects = await _trainingApi.GetProjectsAsync();
+
+            return projects.Select(project => project.Name).ToList();
+        }
+
+        public async Task<CustomVisionOperationResponse> GetOrCreateProjectByName(string projectName)
+        {
+            if (await ProjectExists(projectName))
             {
                 return new CustomVisionOperationResponse { Success = true };
             }
@@ -40,7 +47,7 @@ namespace VideoAnalytics.Web.Services
 
             if (objectDetectionDomain != null)
             {
-                var project = await _trainingApi.CreateProjectAsync(_projectSettings.ProjectName, null, objectDetectionDomain.Id);
+                var project = await _trainingApi.CreateProjectAsync(projectName, null, objectDetectionDomain.Id);
                 return new CustomVisionOperationResponse { Success = true };
             }
 

@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Select from 'react-select';
 import ReactTooltip from 'react-tooltip';
 import Gallery from 'react-grid-gallery';
 
@@ -11,17 +12,24 @@ export class VideoFrameExtractor extends Component {
     super(props);
     this.state = { 
       step: 0,
+      existingProjects: [],
+      selectedProject: '',
       videoFile: null,
       frameStepMilliseconds: 300,
       maxDurationMilliseconds: 10000,
       frames: [],
-      loading: false 
+      loading: false,
     };
 
+    this.getCustomVisionProjects = this.getCustomVisionProjects.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
     this.renderImageFrames = this.renderImageFrames.bind(this);
     this.onSelectImage = this.onSelectImage.bind(this);
     this.uploadSelectedImages = this.uploadSelectedImages.bind(this);
+  }
+
+  componentDidMount() {
+    this.getCustomVisionProjects();
   }
 
   renderImageFrames(frames) {
@@ -46,7 +54,28 @@ export class VideoFrameExtractor extends Component {
               <p>Loading...</p>
             </div>
           </div>
+
           <div style={{ display: (!this.state.loading && this.state.step === 0) ? 'block' : 'none' }}>
+            <div className='row'>
+              <p className="step-title">Step 1: Select or create a custom vision project</p>
+              <p>Choose an existing custom vision project, or type a name into the box to create a new custom vision project for your extracted image frames to be loaded into.</p>
+              <form onSubmit={e => this.submitProject(e)}>
+                <div className="form-group">
+                  <label for='projectName'>Project name: </label>
+                  <Select
+                    id='projectName'
+                    name='projectName'
+                    value={this.state.selectedProject}
+                    onChange={this.handleProjectUpdate}
+                    options={this.state.existingProjects}
+                  />
+                </div>
+                <button type='submit' className='btn btn-primary'>Submit</button>
+              </form>
+            </div>
+          </div>
+          
+          <div style={{ display: (!this.state.loading && this.state.step === 1) ? 'block' : 'none' }}>
             <div class='row'>
               <form onSubmit={e => this.submit(e)}>
                 <div className="form-group">
@@ -92,7 +121,7 @@ export class VideoFrameExtractor extends Component {
             </div>
           </div>
          
-          <div style={{ display: (!this.state.loading && this.state.step === 1) ? 'block' : 'none' }}>
+          <div style={{ display: (!this.state.loading && this.state.step === 2) ? 'block' : 'none' }}>
             <div className='row'>
               <div className='frame-list-container'>
                 <p>Choose frames to upload to the Custom Vision portal:</p>
@@ -108,6 +137,24 @@ export class VideoFrameExtractor extends Component {
     );
   }
 
+  async getCustomVisionProjects() {
+    const response = await fetch('customvisionauthoring/listcvprojects');
+    const data = await response.json();
+
+    const cvProjects = data.map((p) => {
+      return {
+        value: p,
+        label: p
+      }
+    });
+
+    this.setState({ existingProjects: cvProjects });
+  }
+
+  handleProjectUpdate = selectedProject => {
+    this.setState({ selectedProject });
+  };
+
   handleInputChange(event) {
     const target = event.target;
     const value = target.type === 'file' ? target.files[0] : target.value;
@@ -116,6 +163,29 @@ export class VideoFrameExtractor extends Component {
     this.setState({
       [name]: value
     });
+  }
+
+  async submitProject(e) {
+    e.preventDefault();
+    this.setState({ loading: true });
+
+    const requestBody = { projectName: this.state.selectedProject.value };
+
+    const response = await fetch('customvisionauthoring/createcvproject', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      this.setState({ step: 1 });
+    }
+    this.setState({ loading: false });
   }
 
   async submit(e) {
