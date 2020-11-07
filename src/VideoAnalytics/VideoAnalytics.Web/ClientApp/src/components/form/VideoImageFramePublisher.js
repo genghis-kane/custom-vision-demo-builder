@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import Gallery from 'react-grid-gallery';
 
-import './ImagePublisher.css';
+import './VideoImageFramePublisher.css';
 
-export class ImagePublisher extends Component {
-  static displayName = ImagePublisher.name;
+export class VideoImageFramePublisher extends Component {
+  static displayName = VideoImageFramePublisher.name;
 
   constructor(props) {
     super(props);
