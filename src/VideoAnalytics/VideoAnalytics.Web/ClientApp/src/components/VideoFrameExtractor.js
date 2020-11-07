@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import CreatableSelect from 'react-select/creatable';
 import ReactTooltip from 'react-tooltip';
-import Gallery from 'react-grid-gallery';
+
+import { ImagePublisher } from './form/ImagePublisher';
 
 import './VideoFrameExtractor.css';
 
@@ -23,22 +24,10 @@ export class VideoFrameExtractor extends Component {
 
     this.getCustomVisionProjects = this.getCustomVisionProjects.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
-    this.renderImageFrames = this.renderImageFrames.bind(this);
-    this.onSelectImage = this.onSelectImage.bind(this);
-    this.uploadSelectedImages = this.uploadSelectedImages.bind(this);
   }
 
   componentDidMount() {
     this.getCustomVisionProjects();
-  }
-
-  renderImageFrames(frames) {
-    return (
-      <div className='frame-list-container'>
-        <p>Choose frames to upload to the Custom Vision portal:</p>
-        <Gallery images={frames} onSelectImage={this.onSelectImage} enableLightbox={false}/>
-      </div>
-    );
   }
 
   render() {
@@ -133,19 +122,11 @@ export class VideoFrameExtractor extends Component {
          
           <div style={{ display: (!this.state.loading && this.state.step === 2) ? 'block' : 'none' }}>
             <div className='row'>
-              <div className='step-container'>
-                <p className="step-title">Step 3: Publish images</p>
-                <p>Choose which image frames to publish to your custom vision project.</p>
-              
-                <form onSubmit={this.uploadSelectedImages}>
-                  <div className="form-group">
-                    <div className='frame-list-container'>
-                      <Gallery images={this.state.frames} onSelectImage={this.onSelectImage} enableLightbox={false}/>
-                    </div>
-                  </div>
-                  <button type='submit' className='btn btn-primary'>Publish</button>
-                </form>
-              </div>
+              <ImagePublisher 
+                images={this.state.frames}
+                containerClass='step-container'
+                formSectionTitle='Step 3: Publish images'
+                formSectionBlurb='Choose which image frames to publish to your custom vision project.' />
             </div>
           </div>
 
@@ -235,53 +216,5 @@ export class VideoFrameExtractor extends Component {
     });
 
     this.setState({ frames: imageFrames, step: 2, loading: false });
-  }
-
-  async uploadSelectedImages() {
-    var frames = this.state.frames;
-    var requestBody = frames.filter(i => i.isSelected).map(i => i.src);
-    
-    await fetch('customvisionauthoring/uploadvideoframes', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestBody)
-    });
-  }
-
-  /* Gallery methods */
-  onSelectImage (index, image) {
-    var images = this.state.frames.slice();
-    var img = images[index];
-    if(img.hasOwnProperty("isSelected"))
-        img.isSelected = !img.isSelected;
-    else
-        img.isSelected = true;
-
-    this.setState({
-        frames: images
-    });
-
-    if(this.allImagesSelected(images)){
-        this.setState({
-            selectAllChecked: true
-        });
-    }
-    else {
-        this.setState({
-            selectAllChecked: false
-        });
-    }
-  }
-
-  allImagesSelected (images){
-    var f = images.filter(
-        function (img) {
-            return img.isSelected == true;
-        }
-    );
-    return f.length == images.length;
   }
 }
