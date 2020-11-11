@@ -57,7 +57,7 @@ namespace VideoAnalytics.Web.Controllers
             // var img1 = "frames/0d6efcbb-7e17-4e3f-ab47-5cd461964df9.png";
             // var img2 = "frames/174a6bed-929f-4959-84bd-76d9d28626ab.png";
             // var img3 = "frames/31374798-fc75-431a-ac64-2a216479394c.png";
-            
+            //
             // return new List<string> { img1, img2, img3 };
 
             var paths = new List<string>();
