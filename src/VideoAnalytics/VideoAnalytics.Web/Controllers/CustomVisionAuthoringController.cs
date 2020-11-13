@@ -44,14 +44,13 @@ namespace VideoAnalytics.Web.Controllers
 
         [HttpPost]
         [Route("createcvproject")]
-        public async Task<CustomVisionOperationResponse> CreateCustomVisionProject([FromBody] CustomVisionOperationRequest request)
+        public async Task<CustomVisionCreateProjectOperationResponse> CreateCustomVisionProject([FromBody] CustomVisionCreateProjectOperationRequest request)
         {
             return await _projectService.GetOrCreateProjectByName(request.ProjectName);
         }
 
         [HttpPost]
         [Route("uploadvideo")]
-        [DisableRequestSizeLimit]
         public async Task<IEnumerable<string>> UploadVideo([FromForm]IFormFile file, [FromForm] int frameStepMilliseconds, [FromForm] int maxDurationMilliseconds)
         {
             // var img1 = "frames/0d6efcbb-7e17-4e3f-ab47-5cd461964df9.png";
@@ -61,12 +60,10 @@ namespace VideoAnalytics.Web.Controllers
             // return new List<string> { img1, img2, img3 };
 
             var paths = new List<string>();
+            var pathIdentifier = file.FileName.Substring(0, file.FileName.LastIndexOf('.')-1);
 
             if (file?.Length > 0)
             {
-                // TODO - probably want a separate area for project management
-                // var response = await _projectService.GetOrCreateProject();
-
                 // 1. Upload video to file system
                 string saveVideoTo = $"{_webHostEnvironment.ContentRootPath}\\{_systemSettings.WorkingDirectory}\\videos\\training";
 
@@ -94,18 +91,17 @@ namespace VideoAnalytics.Web.Controllers
 
         [HttpPost]
         [Route("uploadvideoframes")]
-        public async Task UploadVideoFrames([FromBody] IList<string> videoFrames)
+        public async Task UploadVideoFrames([FromBody] CustomVisionUploadFramesOperationRequest request)
         {
-            //TODO
             var paths = new List<string>();
-            foreach (var imageFilePath in videoFrames)
+            foreach (var imageFilePath in request.Frames)
             {
                 var basePath = $"{_webHostEnvironment.ContentRootPath}\\{_systemSettings.WorkingDirectory}";
                 var path = $"{basePath}{imageFilePath}";
                 paths.Add(path);
             }
 
-            await _authoringService.PublishImages(paths);
+            await _authoringService.PublishImages(paths, request.ProjectName);
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace VideoAnalytics.Web.Models
 {
-    public class CustomVisionOperationResponse
+    public class CustomVisionCreateProjectOperationResponse
     {
         public bool Success { get; set; }
     }

@@ -5,6 +5,6 @@ namespace VideoAnalytics.Web.Services.Interfaces
 {
     public interface ICustomVisionAuthoringService
     {
-        Task PublishImages(IList<string> imageFilePaths);
+        Task PublishImages(IList<string> imageFilePaths, string customVisionProjectName);
     }
 }

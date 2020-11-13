@@ -34,11 +34,11 @@ namespace VideoAnalytics.Web.Services
             return projects.Select(project => project.Name).ToList();
         }
 
-        public async Task<CustomVisionOperationResponse> GetOrCreateProjectByName(string projectName)
+        public async Task<CustomVisionCreateProjectOperationResponse> GetOrCreateProjectByName(string projectName)
         {
             if (await ProjectExists(projectName))
             {
-                return new CustomVisionOperationResponse { Success = true };
+                return new CustomVisionCreateProjectOperationResponse { Success = true };
             }
 
             // Create project if it doesn't already exist
@@ -48,10 +48,10 @@ namespace VideoAnalytics.Web.Services
             if (objectDetectionDomain != null)
             {
                 var project = await _trainingApi.CreateProjectAsync(projectName, null, objectDetectionDomain.Id);
-                return new CustomVisionOperationResponse { Success = true };
+                return new CustomVisionCreateProjectOperationResponse { Success = true };
             }
 
-            return new CustomVisionOperationResponse { Success = false };
+            return new CustomVisionCreateProjectOperationResponse { Success = false };
         }
 
         public async Task<bool> ProjectExists(string projectName)

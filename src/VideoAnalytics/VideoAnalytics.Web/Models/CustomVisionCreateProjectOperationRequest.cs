@@ -1,6 +1,6 @@
 ﻿namespace VideoAnalytics.Web.Models
 {
-    public class CustomVisionOperationRequest
+    public class CustomVisionCreateProjectOperationRequest
     {
         public string ProjectName { get; set; }
     }

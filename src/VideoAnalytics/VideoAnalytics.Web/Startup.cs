@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Autofac;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,6 +41,18 @@ namespace VideoAnalytics.Web
             services.AddSpaStaticFiles(configuration =>
             {
                 configuration.RootPath = "ClientApp/build";
+            });
+
+            services.Configure<IISServerOptions>(options =>
+            {
+                options.MaxRequestBodySize = int.MaxValue;
+            });
+
+            services.Configure<FormOptions>(x =>
+            {
+                x.ValueLengthLimit = int.MaxValue;
+                x.MultipartBodyLengthLimit = int.MaxValue; // default value is only 128 MB
+                x.MultipartHeadersLengthLimit = int.MaxValue;
             });
         }
 
@@ -87,7 +100,7 @@ namespace VideoAnalytics.Web
             var customVisionProjectService = new CustomVisionProjectService(projectSettings, authoringSettings);
             builder.Register(ctx => customVisionProjectService).As<ICustomVisionProjectService>();
 
-            builder.Register(ctx => new CustomVisionAuthoringService(customVisionProjectService, projectSettings, authoringSettings)).As<ICustomVisionAuthoringService>();
+            builder.Register(ctx => new CustomVisionAuthoringService(customVisionProjectService, authoringSettings)).As<ICustomVisionAuthoringService>();
 
             builder.Register(ctx => new CustomVisionPredictionService(customVisionProjectService, projectSettings, predictionSettings)).As<ICustomVisionPredictionService>();
 

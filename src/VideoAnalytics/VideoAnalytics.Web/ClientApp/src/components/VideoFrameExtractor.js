@@ -13,6 +13,7 @@ export class VideoFrameExtractor extends Component {
     super(props);
     this.state = { 
       step: 0,
+      customVisionProjectName: '',
       frames: []
     };
 
@@ -53,6 +54,7 @@ export class VideoFrameExtractor extends Component {
             <div className='row'>
               <VideoImageFramePublisher 
                 images={this.state.frames}
+                customVisionProjectName={this.state.customVisionProjectName}
                 containerClass='step-container'
                 formSectionTitle='Step 3: Publish images'
                 formSectionBlurb='Choose which image frames to publish to your custom vision project.' />
@@ -65,6 +67,7 @@ export class VideoFrameExtractor extends Component {
   }
 
   customVisionProjectSelectCallback(result) {
+    this.setState( { customVisionProjectName: result });
     this.setState({ step: 1 });
   }
 
