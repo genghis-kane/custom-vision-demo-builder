@@ -33,7 +33,7 @@ namespace VideoAnalytics.Web.Modules
             var customVisionProjectService = new CustomVisionProjectService(projectSettings, authoringSettings);
             builder.Register(ctx => customVisionProjectService).As<ICustomVisionProjectService>();
 
-            builder.Register(ctx => new CustomVisionAuthoringService(customVisionProjectService, projectSettings, authoringSettings)).As<ICustomVisionAuthoringService>();
+            builder.Register(ctx => new CustomVisionAuthoringService(customVisionProjectService, authoringSettings)).As<ICustomVisionAuthoringService>();
 
             builder.Register(ctx => new CustomVisionPredictionService(customVisionProjectService, projectSettings, predictionSettings)).As<ICustomVisionPredictionService>();
 

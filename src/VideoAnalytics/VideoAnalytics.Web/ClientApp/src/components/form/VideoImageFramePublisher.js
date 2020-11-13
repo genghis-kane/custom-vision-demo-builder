@@ -51,7 +51,10 @@ export class VideoImageFramePublisher extends Component {
     this.setState({ loading: true });
 
     var images = this.state.images;
-    var requestBody = images.filter(i => i.isSelected).map(i => i.src);
+    var requestBody = {
+      frames: images.filter(i => i.isSelected).map(i => i.src),
+      projectName: this.props.customVisionProjectName
+    };
     
     await fetch('customvisionauthoring/uploadvideoframes', {
       method: 'POST',

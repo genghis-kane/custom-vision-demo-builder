@@ -11,24 +11,20 @@ namespace VideoAnalytics.Web.Services
     public class CustomVisionAuthoringService : ICustomVisionAuthoringService
     {
         private readonly ICustomVisionProjectService _projectService;
-        private readonly ICustomVisionProjectSettings _projectSettings;
         private readonly CustomVisionTrainingClient _trainingApi;
 
         public CustomVisionAuthoringService(
             ICustomVisionProjectService projectService,
-            ICustomVisionProjectSettings projectSettings, 
             ICustomVisionServiceSettings serviceSettings)
         {
             _projectService = projectService;
-            _projectSettings = projectSettings;
-
             _trainingApi = new CustomVisionTrainingClient(new ApiKeyServiceClientCredentials(serviceSettings.AccountKey))
             {
                 Endpoint = serviceSettings.AccountEndpoint
             };
         }
 
-        public async Task PublishImages(IList<string> imageFilePaths)
+        public async Task PublishImages(IList<string> imageFilePaths, string customVisionProjectName)
         {
             var imageFileEntries = new List<ImageFileCreateEntry>();
             foreach (var imageFilePath in imageFilePaths)
@@ -38,7 +34,7 @@ namespace VideoAnalytics.Web.Services
                 imageFileEntries.Add(entry);
             }
 
-            var projectId = await _projectService.GetProjectId(_projectSettings.ProjectName);
+            var projectId = await _projectService.GetProjectId(customVisionProjectName);
             await _trainingApi.CreateImagesFromFilesAsync(projectId, new ImageFileCreateBatch(imageFileEntries));
 
             // TODO - validations
