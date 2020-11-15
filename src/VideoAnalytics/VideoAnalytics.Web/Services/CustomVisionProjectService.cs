@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Training;
@@ -65,10 +64,24 @@ namespace VideoAnalytics.Web.Services
             if (await ProjectExists(projectName))
             {
                 IList<Project> projects = await _trainingApi.GetProjectsAsync();
-                return projects.First(p => p.Name == projectName).Id;
+                return projects.First(p => p.Name == projectName)?.Id ?? Guid.Empty;
             }
             
             return Guid.Empty;
+        }
+
+        public async Task<string> GetProjectCurrentPublishedModelName(string projectName)
+        {
+            if (await ProjectExists(projectName))
+            {
+                var projectId = await GetProjectId(projectName);
+                var iterations = await _trainingApi.GetIterationsAsync(projectId);
+
+                // Models don't seem to have an explicit published status, but PublishName is null on anything that isn't currently published.
+                return iterations.OrderByDescending(i => i.TrainedAt).First(i => !string.IsNullOrEmpty(i.PublishName))?.PublishName ?? string.Empty;
+            }
+
+            return string.Empty;
         }
     }
 }

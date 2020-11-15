@@ -11,5 +11,6 @@ namespace VideoAnalytics.Web.Services.Interfaces
         Task<CustomVisionCreateProjectOperationResponse> GetOrCreateProjectByName(string projectName);
         Task<bool> ProjectExists(string projectName);
         Task<Guid> GetProjectId(string projectName);
+        Task<string> GetProjectCurrentPublishedModelName(string projectName);
     }
 }
