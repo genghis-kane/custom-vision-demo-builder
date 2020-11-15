@@ -1,19 +1,22 @@
 import React, { Component } from 'react';
 import ReactPlayer from 'react-player'
 
-import './Demo.css';
+import './Prediction.css';
 
-export class Demo extends Component {
-  static displayName = Demo.name;
+export class Prediction extends Component {
+  static displayName = Prediction.name;
 
+  /* TODO: polling */
   constructor(props) {
     super(props);
 
     this.setIntervalId = 0;
-    this.boundingBoxColor = this.props.boundingBoxColor;
+    this.boundingBoxColor = 'red';
     this.boundingBoxBorderStyle = `3px solid ${this.boundingBoxColor}`;
 
     this.state = { 
+      file: null, 
+      uploadedVideoPath: null, 
       predictions: [],
       currentFramePrediction: {},
       currentFramePredictionIndex: 0,
@@ -26,20 +29,18 @@ export class Demo extends Component {
     this.videoPlayerRef = React.createRef();
     this.boundingBoxRef = React.createRef();
 
-    this.populatePredictions = this.populatePredictions.bind(this);
+    this.renderVideo = this.renderVideo.bind(this);
     this.startVideo = this.startVideo.bind(this);
     this.stopVideo = this.stopVideo.bind(this);
   }
 
   componentDidMount() {
-    this.populatePredictions();
-
     var videoPlayerHeight = this.videoPlayerRef.current.wrapper.clientHeight;
     var videoPlayerWidth = this.videoPlayerRef.current.wrapper.clientWidth;
     this.setState({ videoPlayerHeight: videoPlayerHeight, videoPlayerWidth: videoPlayerWidth });
   }
 
-  render() {
+  renderVideo() {
     var boundingBoxes;
     if (this.state.currentFramePrediction && this.state.currentFramePrediction.predictionObjects) {
       boundingBoxes = this.state.currentFramePrediction.predictionObjects.map(p => {  
@@ -69,11 +70,10 @@ export class Demo extends Component {
     }
     
     return (
-      <div className="demo-container">
-        <div className="video-container">
+      <div className="video-container">
           <ReactPlayer 
             ref={this.videoPlayerRef} 
-            url={this.props.videoUrl} 
+            url={this.state.uploadedVideoPath} 
             playing={this.state.playing} 
             loop={true} 
             muted={true} 
@@ -82,8 +82,59 @@ export class Demo extends Component {
           <button onClick={this.startVideo}>Play</button>
           <button onClick={this.stopVideo}>Stop</button>
         </div>
+    );
+  }
+
+  render() {
+    let contents = this.state.loading
+      ? <p><em>Loading...</em></p>
+      : this.renderVideo();
+
+    return (
+      <div>
+        <form onSubmit={e => this.submit(e)}>
+          <div className="form-group">
+            <label for='videoFile'>
+              Upload video file: 
+            </label>            
+            <input 
+              id='videoFile' 
+              name='videoFile' 
+              type='file' 
+              className='form-control-file' 
+              onChange={e => this.setFile(e)} />
+          </div>
+          <button type='submit' className='btn btn-primary'>Upload</button>
+        </form>
+        {contents}
       </div>
     );
+  }
+
+  setFile(e) {
+    this.setState({ file: e.target.files[0] });
+  }
+
+  async submit(e) {
+    e.preventDefault();
+    this.setState({ loading: true });
+
+    const formData = new FormData();
+    formData.append('file', this.state.file);
+    formData.append('projectName', this.props.customVisionProjectName);
+    
+    const response = await fetch('customvisionprediction/uploadvideo', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json'
+      },
+      body: formData
+    });
+
+    const data = await response.json();
+
+    this.setState({ uploadedVideoPath: data.videoFilePath, predictions: data.predictions });
+    this.setState({ loading: false });
   }
 
   startVideo() {
@@ -101,14 +152,5 @@ export class Demo extends Component {
   stopVideo() {
     this.setState({ playing: false });
     clearInterval(this.setIntervalId);
-  }
-
-  async populatePredictions() {
-    this.setState({ predictions: [], loading: true });
-
-    const response = await fetch(this.props.predictionResultsUrl);
-    const data = await response.json();
-    
-    this.setState({ predictions: data, loading: false });
   }
 }

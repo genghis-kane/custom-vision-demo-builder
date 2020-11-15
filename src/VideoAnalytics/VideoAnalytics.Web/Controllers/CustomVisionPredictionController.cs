@@ -36,7 +36,7 @@ namespace VideoAnalytics.Web.Controllers
         [HttpPost]
         [Route("uploadvideo")]
         [DisableRequestSizeLimit]
-        public async Task<VideoPredictionResponse> UploadVideoForPrediction([FromForm] IFormFile file)
+        public async Task<VideoPredictionResponse> UploadVideoForPrediction([FromForm] IFormFile file, [FromForm] string projectName)
         {
             var frontEndRenderPath = string.Empty;
             var results = new List<PredictionResponse>();
@@ -61,7 +61,7 @@ namespace VideoAnalytics.Web.Controllers
                 int maxDurationMilliseconds = 10000;
                 var extractedFrames = await _videoFrameExtractionService.SaveImageFrames(filePath, saveFramesTo, frameStepMilliseconds, maxDurationMilliseconds);
 
-                results = (await _predictionService.GetPredictionsFromFrameList(extractedFrames.VideoFrames)).ToList();
+                results = (await _predictionService.GetPredictionsFromFrameList(extractedFrames.VideoFrames, projectName)).ToList();
             }
 
             return new VideoPredictionResponse
