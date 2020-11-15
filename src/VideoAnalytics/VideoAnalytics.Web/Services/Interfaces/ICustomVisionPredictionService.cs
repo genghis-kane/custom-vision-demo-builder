@@ -6,6 +6,6 @@ namespace VideoAnalytics.Web.Services.Interfaces
 {
     public interface ICustomVisionPredictionService
     {
-        Task<IEnumerable<PredictionResponse>> GetPredictionsFromFrameList(IEnumerable<VideoFrame> requests);
+        Task<IEnumerable<PredictionResponse>> GetPredictionsFromFrameList(IEnumerable<VideoFrame> requests, string projectName);
     }
 }

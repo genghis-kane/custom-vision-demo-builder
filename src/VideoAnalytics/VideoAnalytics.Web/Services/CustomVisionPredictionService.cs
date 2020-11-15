@@ -29,12 +29,12 @@ namespace VideoAnalytics.Web.Services
             };
         }
 
-        public async Task<IEnumerable<PredictionResponse>> GetPredictionsFromFrameList(IEnumerable<VideoFrame> requests)
+        public async Task<IEnumerable<PredictionResponse>> GetPredictionsFromFrameList(IEnumerable<VideoFrame> requests, string projectName)
         {
             var predictionResponses = new List<PredictionResponse>();
 
-            var projectId = await _projectService.GetProjectId(_projectSettings.ProjectName);
-            var publishedModelName = await _projectService.GetProjectCurrentPublishedModelName(_projectSettings.ProjectName);
+            var projectId = await _projectService.GetProjectId(projectName);
+            var publishedModelName = await _projectService.GetProjectCurrentPublishedModelName(projectName);
             foreach (var request in requests)
             {
                 var predictionResponse = await GetFramePrediction(request, projectId, publishedModelName);
