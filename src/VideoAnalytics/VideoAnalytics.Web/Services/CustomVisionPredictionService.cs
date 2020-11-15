@@ -34,16 +34,17 @@ namespace VideoAnalytics.Web.Services
             var predictionResponses = new List<PredictionResponse>();
 
             var projectId = await _projectService.GetProjectId(_projectSettings.ProjectName);
+            var publishedModelName = await _projectService.GetProjectCurrentPublishedModelName(_projectSettings.ProjectName);
             foreach (var request in requests)
             {
-                var predictionResponse = await GetFramePrediction(request, projectId);
+                var predictionResponse = await GetFramePrediction(request, projectId, publishedModelName);
                 predictionResponses.Add(predictionResponse);
             }
 
             return predictionResponses;
         }
 
-        private async Task<PredictionResponse> GetFramePrediction(VideoFrame request, Guid projectId)
+        private async Task<PredictionResponse> GetFramePrediction(VideoFrame request, Guid projectId, string publishedModelName)
         {
             var predictionResponse = new PredictionResponse { Timestamp = DateTime.Now, Millisecond = request.Millisecond };
 
@@ -51,7 +52,7 @@ namespace VideoAnalytics.Web.Services
             {
                 var response = await _predictionApi.DetectImageWithHttpMessagesAsync(
                     projectId,
-                    "Iteration3",
+                    publishedModelName,
                     stream
                 );
 
